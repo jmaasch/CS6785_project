@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -J hmm                        # Job name
+#SBATCH -o hmm_%j.out                 # output file (%j expands to jobID)
+#SBATCH -e hmm_%j.err                 # error log file (%j expands to jobID)
+#SBATCH --mail-type=ALL                      # Request status by email
+#SBATCH --mail-user=jam887@cornell.edu       # Email address to send results to.
+#SBATCH -N 1                                 # Total number of nodes requested
+#SBATCH -n 1                                 # Total number of cores requested
+#SBATCH --get-user-env                       # retrieve the users login environment
+#SBATCH --mem=2000                           # server memory requested (per node)
+#SBATCH -t 24:00:00                          # Time limit (hh:mm:ss)
+#SBATCH --partition=default_partition        # Request partition
+#SBATCH --gres=gpu:0                         # Type/number of GPUs needed
+chmod u+x /home/jam887/moses/hmm/hmm.sh
+/home/jam887/moses/hmm/hmm.sh
+
