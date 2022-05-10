@@ -1,0 +1,104 @@
+---
+title: "Generative deep learning for SARS-CoV-2 drug discovery"
+author: "Jacqueline R. M. A. Maasch"
+date: "5/9/2022"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+
+# Load packages
+library(ggplot2)
+library(ggthemes)
+library(cowplot)
+library(colorspace)
+
+```
+
+## Construct datasets
+
+```{r data}
+
+# Pre-training dataset size.
+subset <- c(0, 50000, 100000, 500000, 1584663)
+
+# Validity.
+validity <- rep("Validity", length(subset))
+active_validity <- c(0.010, 0.320, 0.406, 0.570, 0.665)
+inactive_validity <- c(0.011, 0.290, 0.313, 0.383, 0.460)
+
+# Quantitative estimation of drug-likeness.
+qed <- rep("QED", length(subset))
+active_qed <- c(0.283, 0.078, 0.111, 0.148, 0.144)
+inactive_qed <- c(0.198, 0.074, 0.090, 0.118, 0.089)
+
+# Synthetic accessibility.
+sa <- rep("SA", length(subset))
+active_sa <- c(3.195, 0.512, 0.574, 0.483, 0.537)
+inactive_sa <- c(1.089, 0.500, 0.480, 0.471, 0.502)
+
+# Construct dataframe.
+df <- data.frame(Value = c(active_sa, active_qed, active_validity, 
+                           inactive_sa, inactive_qed, inactive_validity),
+                 Metric = c(rep(c(sa, qed, validity), 2)),
+                 Subset = c(rep(subset, 6)),
+                 Data = c(rep("Active", length(subset) * 3),
+                          rep("Inactive", length(subset) * 3)))
+
+
+```
+
+## Plot data
+
+```{r plot}
+library(scales)
+plot_metrics <- ggplot(df,
+                       aes(x = Subset,
+                           y = Value,
+                           color = Data,
+                           shape = Data)) +
+                theme_classic() +
+                geom_line(size = 1.5) +
+                geom_point(size = 4) +
+                facet_wrap(~Metric, scales = "free_y") +
+                scale_x_continuous(trans = "log10",
+                                   breaks = trans_breaks("log10", function(x) 10^x),
+                                   labels = trans_format("log10", math_format(10^.x))) +
+                #scale_y_continuous(trans = "log10",
+                 #                  breaks = trans_breaks("log10", function(x) 10^x),
+                  #                 labels = trans_format("log10", math_format(10^.x))) +
+                labs(x = "\nTotal pre-training observations",
+                     y = "Value\n") +
+                theme(legend.title = element_text(face = "bold",
+                                                  size = 16),
+                      legend.position = c(0.95, 0.2),
+                      strip.background = element_rect(fill = "#ede6df"),
+                      strip.text = element_text(size = 18,
+                                                face = "bold"),
+                      axis.title = element_text(size = 16,
+                                                face = "bold"),
+                      axis.text = element_text(size = 14),
+                      legend.text = element_text(size = 14)) + 
+                scale_color_manual(name = "Fine-tuning", 
+                                   values = c(qualitative_hcl(5, palette = "Dynamic"))) +
+                scale_shape(name = "Fine-tuning")
+
+plot_metrics
+
+ggsave("aae_metrics_by_subset.jpg",
+       plot_metrics,
+       height = 4,
+       width = 12,
+       dpi = 300)
+
+```
+
+
+
+
+
+
+
+
+
+
